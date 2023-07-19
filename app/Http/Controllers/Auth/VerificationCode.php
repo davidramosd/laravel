@@ -33,6 +33,7 @@ class VerificationCode extends Controller
             // El usuario existe, redirigir a la pantalla de inicio de sesión
             return redirect()->route('login');
         }else {
+            session()->flash('status', 'Code No found');
             return redirect()->route('identification');
         }
     }

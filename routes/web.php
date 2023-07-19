@@ -36,7 +36,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/users/{user}/active', [UserActiveController::class, 'update'])->name('users.active');
     Route::get('/users/pdf', [UserController::class, 'createPDF'])->name('users.pdf');
+    Route::get('/users/date', [UserController::class, 'showdate'])->name('users.showdate');
     Route::get('/users/clear-filter', [UserController::class, 'clearFilter'])->name('users.clearFilter');
+    Route::get('/users/clear-filter-date', [UserController::class, 'clearFilterDate'])->name('users.clearFilterDate');
     Route::resource('users', UserController::class, [
         'names' => 'users',
     ]);

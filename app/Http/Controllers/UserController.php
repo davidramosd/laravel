@@ -62,10 +62,20 @@ class UserController extends Controller
         $request->session()->forget('name');
         $request->session()->forget('lastname');
         $request->session()->forget('department');
+        $request->session()->forget('first_date');
+        $request->session()->forget('last_date');
 
         return redirect()->route('users.index');
     }
 
+    
+    public function clearFilterDate(Request $request, User $user)
+    {
+        $request->session()->forget('first_date');
+        $request->session()->forget('last_date');
+
+        return redirect()->route('users.index');
+    }
 
     public function edit(User $user) {
      
@@ -74,18 +84,58 @@ class UserController extends Controller
 
     }
 
-    public function show(Request $request, User $user) {
-        $userAccess = User::select('users.id', 'users.name', 'access.registered_at as date_access')
+
+    public function showdate(Request $request, User $user) {
+        /* $userAccess = User::select('users.id', 'users.name', 'access.registered_at as date_access')
                 ->join('access', 'users.id', '=', 'access.user_id')
                 ->where('users.id', $user->id)
-                ->get();
-        //dd($user->id);
-        /* if($request->has('download'))
-	    {
-            dd($user->id);
-	        $pdf = PDF::loadView('index',$userAccess);
-	        return $pdf->download('users_pdf_example.pdf');
-	    } */
+                ->get(); */
+        //dd($user);
+        $query = User::query();    
+        $query->join('access', 'users.id', '=', 'access.user_id');
+        $query->select('users.id', 'users.name', 'access.registered_at as date_access');
+
+        if($request->has('first_date') && $request->has('last_date')) {
+            $query->whereBetween('access.registered_at', [$request->query('first_date'), $request->query('last_date')])->get();
+        }
+
+        /* if ($request->has('first_date')) {
+            $query->where('users.name', 'like', '%' . $request->query('name') . '%');
+        }
+            
+        if ($request->has('last_date')) {
+            $query->where('users.lastname', 'like', '%' . $request->query('lastname') . '%');
+        }  */
+        
+
+        $userAccess = $query->paginate(10);
+        return view('users.show', [ 'user' => $userAccess]);
+    }
+
+    public function show(Request $request, User $user) {
+        /* $userAccess = User::select('users.id', 'users.name', 'access.registered_at as date_access')
+                ->join('access', 'users.id', '=', 'access.user_id')
+                ->where('users.id', $user->id)
+                ->get(); */
+        //dd($user);
+        $query = User::query();    
+        $query->join('access', 'users.id', '=', 'access.user_id');
+        $query->select('users.id', 'users.name', 'access.registered_at as date_access');
+
+        if($request->has('first_date') && $request->has('last_date')) {
+            $query->whereBetween('date_access', [$request->query('first_date'), $request->query('last_date')])->get();
+        }
+
+        /* if ($request->has('first_date')) {
+            $query->where('users.name', 'like', '%' . $request->query('name') . '%');
+        }
+            
+        if ($request->has('last_date')) {
+            $query->where('users.lastname', 'like', '%' . $request->query('lastname') . '%');
+        }  */
+        
+
+        $userAccess = $query->paginate(10);
         return view('users.show', [ 'user' => $userAccess]);
     }
 
@@ -133,11 +183,15 @@ class UserController extends Controller
 
     
         //dd($request);
-        // share data to view
-        $pdfContent = view('components.list-date', [ 'user' => $userAccess])->render();
-        $pdf = PDF::loadHTML($pdfContent);
-        // download PDF file with download method
-        return $pdf->download('pdf_file.pdf');
+        try {
+            $pdfContent = view('components.list-date', [ 'user' => $userAccess])->render();
+            $pdf = PDF::loadHTML($pdfContent);
+            // download PDF file with download method
+            return $pdf->download('pdf_file.pdf');
+        } catch (Throwable $e) {
+            session()->flash('status', 'Problemas con pdf');
+        }
+        
     }
 
 /**
@@ -153,7 +207,33 @@ class UserController extends Controller
     */
     public function import() 
     {
-        Excel::import(new UsersImport,request()->file('file'));
-        return back();
+        try {
+            if( request()->file('file')) {
+                Excel::import(new UsersImport,request()->file('file'));
+                //$importedData = Excel::toArray(new UsersImport, request()->file('file'));
+                //dd($importedData[0]);
+                /* if(count($importedData)){
+                    foreach($importedData as $clave) {
+                        //dd($clave[0]['email']);
+                        $user = DB::table('users')
+                        ->where('email', $clave[0]['email'])
+                        ->first();
+                        DB::table('room_users')->insert([
+                            'user_id' => $user->id,
+                            'room_id' => 1
+                        ]);
+                    }
+                } */
+                return to_route('dashboard')->with('status', 'Usuarios creados');
+            }else {
+                return to_route('dashboard')->with('status', 'Problemas con el CVS');
+            }
+           
+        } catch (Throwable $e) {
+            //session()->flash('status', 'Problemas con el csv');
+            return back()->withErrors('Error de base de datos: ' . $e->getMessage());
+            //return to_route('dashboard')->with('status', 'Problemas con el csv');
+        }
+        
     }
 }

@@ -45,32 +45,39 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
         //dd($this->input('password'));
 
-        //$users = DB::table('users')
-            //->join('room_users', 'users.id', '=', 'room_users.user_id')
-            //->where('users.email', $this->input('email'))
-            //->where('room_users.room_id', 1)
-            //->select('users.*', 'room_users.room_id')
-            //->get();
+        /* $users = DB::table('users')
+            ->join('room_users', 'users.id', '=', 'room_users.user_id')
+            ->join('rooms', 'room_users.room_id', '=', 'rooms.id')
+            ->where('users.email', $this->input('email'))
+            ->where('rooms.name', 'ROOM_911')
+            ->select('users.*', 'room_users.room_id')
+            ->get();
             //dd(count($users));
-        /*if ( !count($users)) {
+        if ( !count($users)) {
             
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => 'Email no tiene permisos',
             ]);
-        } */
+        }  */
         //, 'active' => $this->active
         //dd(Auth::attempt(['email' =>$this->email, 'password' => $this->password, 'active' => 1 ]));
         if ( !Auth::attempt(['email' =>$this->email, 'password' => $this->password, 'active' => 1 ], $this->boolean('remember') ))
         {
-            $users = DB::table('access')
-            ->join('users', 'access.user_id', '=', 'users.id')
+            $users = DB::table('users')
             ->where('users.email', $this->input('email'))
-            ->create([
-                'access.user_id' => 'users.id',
-            ]); 
+            ->update([
+                'total_access' => DB::raw('total_access + 1'),
+            ]);
+            $user = DB::table('users')
+            ->where('email', $this->input('email'))
+            ->first();
 
+            DB::table('access')->insert([
+                'user_id' => $user->id,
+            ]);
+            
             RateLimiter::hit($this->throttleKey());
             session()->flash('status', 'User no enabled');
             throw ValidationException::withMessages([
