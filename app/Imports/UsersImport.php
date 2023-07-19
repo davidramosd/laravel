@@ -23,6 +23,7 @@ class UsersImport implements ToModel, WithHeadingRow
             'document'    => $row['document'],
             'code'      =>$row['code'],
             'password' => Hash::make($row['password']),
+            'department_id'      =>$row['department'],
         ]);
     }
 }

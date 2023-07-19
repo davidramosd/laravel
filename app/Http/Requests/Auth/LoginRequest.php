@@ -73,10 +73,12 @@ class LoginRequest extends FormRequest
             $user = DB::table('users')
             ->where('email', $this->input('email'))
             ->first();
-
-            DB::table('access')->insert([
-                'user_id' => $user->id,
-            ]);
+            if($user) {
+                DB::table('access')->insert([
+                    'user_id' => $user->id,
+                ]);
+            }
+            
             
             RateLimiter::hit($this->throttleKey());
             session()->flash('status', 'User no enabled');
