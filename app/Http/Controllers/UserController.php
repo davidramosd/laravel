@@ -121,9 +121,9 @@ class UserController extends Controller
         $query = User::query();    
         $query->join('access', 'users.id', '=', 'access.user_id');
         $query->select('users.id', 'users.name', 'access.registered_at as date_access');
-
+        $query->where('users.id', $user->id);
         if($request->has('first_date') && $request->has('last_date')) {
-            $query->whereBetween('date_access', [$request->query('first_date'), $request->query('last_date')])->get();
+            $query->whereBetween('access.registered_at', [$request->query('first_date'), $request->query('last_date')])->get();
         }
 
         /* if ($request->has('first_date')) {
@@ -136,7 +136,7 @@ class UserController extends Controller
         
 
         $userAccess = $query->paginate(10);
-        return view('users.show', [ 'user' => $userAccess]);
+        return view('users.show', [ 'user' => $userAccess, 'id' => $user->id]);
     }
 
     public function update(SaveUserRequest $request, User $user) {
