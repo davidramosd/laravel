@@ -78,7 +78,7 @@ class UserController extends Controller
     }
 
     public function edit(User $user) {
-     
+
         $departments = DB::table('departments')->get();
         return view('users.edit', [ 'user' => $user, 'departments' => $departments]);
 

@@ -27,17 +27,20 @@ class SaveUserRequest extends FormRequest
     public function rules(): array
     {
         if($this->isMethod('PATCH')) {
+            //$user = $this->route('users.update');
+            $user = $this->request->get('id');
             return [
                 'name' => ['string', 'max:255'],
                 'lastname' => ['string', 'max:255'],
                 'document' => ['string', 'max:255'],
-                'code' => [ 'string', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+                //'code' => [ 'string', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+                'code' => [ 'string', 'max:255', Rule::unique(User::class)->ignore($user)],
                 'department_id' => ['numeric'],
                 'active' => ['boolean'],
                 //Rule::unique('users')->ignore($user->id),
                 //'email' => ['string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
                 //'email' => ['string', 'email', 'max:255', Rule::unique('users', 'email')->ignore(auth()->id())],
-                'email' => [ 'string','email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+                'email' => [ 'string','email', 'max:255', Rule::unique(User::class)->ignore($user)],
                 //'email' => ['string', 'email', Rule::unique('users')],
                 'password' => [Password::defaults()],
             ];
