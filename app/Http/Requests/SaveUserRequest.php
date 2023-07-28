@@ -27,7 +27,7 @@ class SaveUserRequest extends FormRequest
     public function rules(): array
     {
         if($this->isMethod('PATCH')) {
-            //$user = $this->route('users.update');
+            //$user = $this->route('users.show');
             $user = $this->request->get('id');
             return [
                 'name' => ['string', 'max:255'],

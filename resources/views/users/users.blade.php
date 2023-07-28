@@ -16,7 +16,13 @@
                 <br>
                 <button class="inline-flex items-center my-8 px-4 py-2 text-xs font-semibold tracking-widest text-center text-white uppercase transition duration-150 ease-in-out border border-2 border-transparent rounded-md dark:text-sky-200 bg-sky-800 hover:bg-sky-700 active:bg-sky-700 focus:outline-none focus:border-sky-500">Import User Data</button>
             </form>
-  
+                @if (isset($errors) && $errors->any())
+                <div class="card-header text-center"> 
+                    @foreach($errors->all() as $error)
+                    {{ $error }}
+                    @endforeach
+                </div>
+                @endif
           {{--   <table class="table table-bordered mt-3">
                 <tr>
                     <th colspan="3">

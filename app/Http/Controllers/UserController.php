@@ -209,7 +209,14 @@ class UserController extends Controller
     {
         try {
             if( request()->file('file')) {
-                Excel::import(new UsersImport,request()->file('file'));
+
+                $file = request()->file('file');
+
+                $import = new UsersImport;
+                $import->import($file);
+                //dd($import->errors());
+                //Excel::import(new UsersImport,request()->file('file'));
+
                 //$importedData = Excel::toArray(new UsersImport, request()->file('file'));
                 //dd($importedData[0]);
                 /* if(count($importedData)){
@@ -224,11 +231,8 @@ class UserController extends Controller
                         ]);
                     }
                 } */
-                return to_route('dashboard')->with('status', 'Usuarios creados');
-            }else {
-                return to_route('dashboard')->with('status', 'Problemas con el CVS');
+                return back();
             }
-           
         } catch (Throwable $e) {
             //session()->flash('status', 'Problemas con el csv');
             return back()->withErrors('Error de base de datos: ' . $e->getMessage());
