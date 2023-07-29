@@ -28,8 +28,9 @@ class NumberId
             }
 
             return redirect('/identification');
-        }
+        } 
         return $next($request);
+        
     }
 
     protected function shouldConfirmCode($request, $passwordTimeoutSeconds = null, $passwordTimeout =10800)

@@ -16,6 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+        Schema::create('type_users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -34,6 +39,10 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('department_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+            $table->foreignId('type_user_id')
                 ->nullable()
                 ->constrained()
                 ->nullOnDelete();
@@ -72,5 +81,6 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('rooms');
         Schema::dropIfExists('departments');
+        Schema::dropIfExists('type_users');
     }
 };

@@ -5,7 +5,6 @@
             {{ __('Count') }}
         </h2>
     </x-slot>
-    {{$user}}
     <div class="px-6 py-4 space-y-2 text-center flex justify-center  w-full m-2">
         <form action="{{ route('users.show', $id) }}" method="GET">
             @csrf

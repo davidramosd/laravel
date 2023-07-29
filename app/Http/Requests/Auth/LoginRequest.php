@@ -43,37 +43,31 @@ class LoginRequest extends FormRequest
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
-        //dd($this->input('password'));
 
-        /* $users = DB::table('users')
-            ->join('room_users', 'users.id', '=', 'room_users.user_id')
-            ->join('rooms', 'room_users.room_id', '=', 'rooms.id')
-            ->where('users.email', $this->input('email'))
-            ->where('rooms.name', 'ROOM_911')
-            ->select('users.*', 'room_users.room_id')
-            ->get();
+        $user = DB::table('users')
+            ->join('type_users', 'users.type_user_id', '=', 'type_users.id')
+            ->where('users.active', 1)
+            ->where('type_users.name', 'admin_room_911')
+            ->where('users.email', $this->input('email') ?? '')
+            ->select('users.*', 'type_users.name')
+            ->first();
             //dd(count($users));
-        if ( !count($users)) {
+        if (!$user) {
             
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Email no tiene permisos',
+                'email' => 'Email does not have permissions',
             ]);
-        }  */
-        //, 'active' => $this->active
-        //dd(Auth::attempt(['email' =>$this->email, 'password' => $this->password, 'active' => 1 ]));
+        }
         if ( !Auth::attempt(['email' =>$this->email, 'password' => $this->password, 'active' => 1 ], $this->boolean('remember') ))
         {
-            $users = DB::table('users')
-            ->where('users.email', $this->input('email'))
-            ->update([
-                'total_access' => DB::raw('total_access + 1'),
-            ]);
-            $user = DB::table('users')
-            ->where('email', $this->input('email'))
-            ->first();
-            if($user) {
+            if ($user->id) {
+                $users = DB::table('users')
+                ->where('users.email', $user->email ?? '')
+                ->update([
+                    'total_access' => DB::raw('total_access + 1'),
+                ]);
                 DB::table('access')->insert([
                     'user_id' => $user->id,
                 ]);
@@ -87,20 +81,12 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        //!Auth::attempt($this->only('email', 'password', 'active'), $this->boolean('remember'))
-
-        $users = DB::table('users')
-            ->where('users.email', $this->input('email'))
+        if ($user->id) {
+            $users = DB::table('users')
+            ->where('users.email', $user->email ?? '')
             ->update([
                 'total_access' => DB::raw('total_access + 1'),
             ]);
-
-        if ($users > 0) {
-
-            $user = DB::table('users')
-            ->where('email', $this->input('email'))
-            ->first();
-
             DB::table('access')->insert([
                 'user_id' => $user->id,
             ]);

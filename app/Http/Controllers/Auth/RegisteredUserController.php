@@ -21,7 +21,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $type_users = DB::table('type_users')->get();
+        return view('auth.register', [ 'type_users' => $type_users]);
     }
 
     /**
@@ -36,6 +37,7 @@ class RegisteredUserController extends Controller
             'code' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'type_user_id' => ['required','numeric'],
         ]);
 
         $user = User::create([
@@ -43,16 +45,17 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'code' => $request->code,
+            'type_user_id' => $request->type_user_id,
         ]);
 
-        DB::table('room_users')->insert([
+        /* DB::table('room_users')->insert([
             'user_id' => $user->id,
             'room_id' => 1
-        ]);
+        ]); */
 
         event(new Registered($user));
 
-        Auth::login($user);
+        //Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
     }

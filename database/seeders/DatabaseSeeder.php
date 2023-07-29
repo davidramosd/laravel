@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
            [ 'name' => 'TI'],
            [ 'name' => 'QA'],
         ]);
+        DB::table('type_users')->insert([
+            [ 'name' => 'employee'],
+            [ 'name' => 'admin_room_911'],
+         ]);
 
         DB::table('rooms')->insert([
             [ 'name' => 'ROOM_911'],
@@ -37,10 +41,11 @@ class DatabaseSeeder extends Seeder
             'document' => '0000',
             'code' => '0000',
             'password' => Hash::make('laravel2023'),
+            'type_user_id' => 2
         ]);
 
-        DB::table('room_users')->insert([
+        /* DB::table('room_users')->insert([
             [ 'user_id' => 1, 'room_id' => 1],
-        ]);
+        ]); */
     }
 }

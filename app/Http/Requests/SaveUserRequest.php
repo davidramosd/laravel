@@ -35,7 +35,7 @@ class SaveUserRequest extends FormRequest
                 'document' => ['string', 'max:255'],
                 //'code' => [ 'string', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
                 'code' => [ 'string', 'max:255', Rule::unique(User::class)->ignore($user)],
-                'department_id' => ['numeric'],
+                'department_id' => ['required','numeric'],
                 'active' => ['boolean'],
                 //Rule::unique('users')->ignore($user->id),
                 //'email' => ['string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],

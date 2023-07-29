@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class VerificationCode extends Controller
 {
@@ -18,22 +19,49 @@ class VerificationCode extends Controller
 
     public function store(Request $request, User $user)
     {
-        // //dd($request);
         // User::where('code', $request->input('code'))
         // ->update(['active' => true,]);
+    
+        $code = $request->input('code');
+        $user_permission = DB::table('users')
+        ->join('room_users', 'users.id', '=', 'room_users.user_id')
+        ->join('rooms', 'room_users.room_id', '=', 'rooms.id')
+        ->where('users.code', $code)
+        ->where('users.active', 1)
+        ->where('rooms.name', 'ROOM_911')
+        ->select('users.*', 'room_users.room_id')
+        ->first();
+        //->get();
+        //dd(count($users));
         
-        // return redirect('/login');
-        $document = $request->input('code');
+        //$user = User::where('code', $code)->first();
+        
 
-        // Buscar al usuario por el documento
-        $user = User::where('code', $document)->first();
-
-        if ($user) {
+        if (!$user_permission) {
+            DB::table('users')
+            ->where('users.code',$code)
+            ->update([
+                'total_access' => DB::raw('total_access + 1'),
+            ]);
+            $users = User::where('code', $code)->first();
+            DB::table('access')->insert([
+                'user_id' => $users->id,
+            ]);
+        }
+        
+        if ($user_permission) {
+            DB::table('users')
+            ->where('users.email', $user_permission->email ?? '')
+            ->update([
+                'total_access' => DB::raw('total_access + 1'),
+            ]);
+            DB::table('access')->insert([
+                'user_id' => $user_permission->id,
+            ]);
             $request->session()->put('auth.verification', time());
-            // El usuario existe, redirigir a la pantalla de inicio de sesión
-            return redirect()->route('login');
+            return redirect()->route('employee');
         }else {
-            session()->flash('status', 'Code No found');
+            session()->flash('status', 'Code not found or disabled user');
             return redirect()->route('identification');
         }
     }

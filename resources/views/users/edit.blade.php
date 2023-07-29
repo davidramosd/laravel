@@ -32,10 +32,30 @@
             
             <div class="mb-6">
                 <label class="flex flex-col block">
+                    <span class=""> {{__('Room')}} </span>
+                    <select name="room_id" id="room_id">
+                        <option value="none" selected disabled hidden>Select</option>
+                        @foreach ($rooms as $room)
+                            <option value="{{ $room->id }}"
+                                {{ $user_room->room_id == $room->id ? 'selected="selected"' : '' }}>
+                                {{ $room->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-input-error class="mt-2" :messages="$errors->get('room_id')" />
+                </label>
+            </div>
+
+            <div class="mb-6">
+                <label class="flex flex-col block">
                     <span class=""> {{__('Department')}} </span>
                     <select name="department_id" id="department_id">
+                        <option value="none" selected disabled hidden>Select</option>
                         @foreach ($departments as $department)
-                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                            <option value="{{ $department->id }}"
+                                {{ $user->department_id == $department->id ? 'selected="selected"' : '' }}>
+                                {{ $department->name }}
+                            </option>
                         @endforeach
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('department_id')" />

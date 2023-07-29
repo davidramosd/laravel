@@ -19,9 +19,13 @@ class UsersImport implements ToModel, WithHeadingRow, SkipsOnError, WithValidati
     *
     * @return \Illuminate\Database\Eloquent\Model|null
     */
-    
+    public function  __construct($room_id)
+    {
+        $this->room_id= $room_id;
+    }
     public function model(array $row)
     {
+        //dd($this->room_id);
         return new User([
             'name'     => $row['name'],
             'lastname'     => $row['lastname'],

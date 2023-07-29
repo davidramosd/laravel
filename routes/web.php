@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserActiveController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,6 +24,11 @@ Route::view('/','welcome')->name('welcome');
 
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::middleware('numberid')->group(function () {
+    Route::view('/employee', 'employee')->name('employee');
+    Route::post('logout_employee', [AuthenticatedSessionController::class, 'destroy'])
+            ->name('logout_employee');
+});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -38,9 +43,7 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/users/{user}/active', [UserActiveController::class, 'update'])->name('users.active');
     Route::get('/users/pdf', [UserController::class, 'createPDF'])->name('users.pdf');
-    Route::get('/users/date', [UserController::class, 'showdate'])->name('users.showdate');
     Route::get('/users/clear-filter', [UserController::class, 'clearFilter'])->name('users.clearFilter');
-    Route::get('/users/clear-filter-date', [UserController::class, 'clearFilterDate'])->name('users.clearFilterDate');
     Route::resource('users', UserController::class, [
         'names' => 'users',
     ]);

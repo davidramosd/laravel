@@ -19,21 +19,27 @@
 
             <div class="flex flex-wrap items-center justify-center gap-4">
 
-                <!-- Input para el nombre -->
-                <label for="name" class="w-full sm:w-auto">{{ __('Search name') }}</label>
-                <input type="text" name="name" value="{{ request('name') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
-            
-                <!-- Input para el apellido -->
-                <label for="lastname" class="w-full sm:w-auto">{{ __('Search lastname') }}</label>
-                <input type="text" name="lastname" value="{{ request('lastname') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
-            
-                <!-- Select para el departamento -->
-                <span class="w-full sm:w-auto">{{ __('Department') }}</span>
-                <select name="department_id" id="department_id" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
-                    @foreach ($departments as $department)
-                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                    @endforeach
-                </select>
+                <div  class="flex flex-col block">
+                    <label for="name" class="w-full sm:w-auto">{{ __('Search name') }}</label>
+                    <input type="text" name="name" value="{{ request('name') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
+                    <x-input-error class="mt-2" :messages="$errors->get('name')" />    
+                </div>
+                
+                <div  class="flex flex-col block">
+                    <label for="lastname" class="w-full sm:w-auto">{{ __('Search lastname') }}</label>
+                    <input type="text" name="lastname" value="{{ request('lastname') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
+                    <x-input-error class="mt-2" :messages="$errors->get('lastname')" />
+                </div>
+                
+                <div  class="flex flex-col block">
+                    <span class="w-full sm:w-auto">{{ __('Department') }}</span>
+                    <select name="department_id" id="department_id" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
+                        <option value="none" selected disabled hidden>Select</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             
                 {{-- <label for="first_date" class="w-full sm:w-auto">{{ __('First Date') }}</label>
                 <input type="date" name="first_date" value="{{ request('first_date') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
@@ -42,7 +48,7 @@
                 <input type="date" name="last_date" value="{{ request('last_date') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1"> --}}
 
                 <!-- Botones de búsqueda y limpieza (opcional) -->
-                <div class="w-full sm:w-auto flex gap-2">
+                <div class="w-full sm:w-auto flex gap-2 m-2">
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">{{ __('Search') }}</button>
                     <a href="{{ route('users.clearFilter') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md">{{ __('Clear Fields') }}</a>
                 </div>

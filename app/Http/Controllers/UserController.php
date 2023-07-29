@@ -26,25 +26,29 @@ class UserController extends Controller
                 ->leftjoin('room_users', 'users.id', '=', 'room_users.user_id')
                 ->leftjoin('rooms', 'room_users.room_id', '=', 'rooms.id')
                 ->paginate(10); */
-
+            $validated = $request->validate([
+                    'name' => 'nullable|string|max:50',
+                    'lastname' => 'nullable|string|max:50'
+            ]);
             $departments = DB::table('departments')->get();
             $query = User::query();
 
             $query->leftjoin('departments', 'users.department_id', '=', 'departments.id');
             $query->leftjoin('room_users', 'users.id', '=', 'room_users.user_id');
             $query->leftjoin('rooms', 'room_users.room_id', '=', 'rooms.id');
+            $query->rightjoin('type_users', 'users.type_user_id', '=', 'type_users.id');
+            $query->where('type_users.name', 'employee');
             $query->select('users.*', 'departments.name as department_name', 'rooms.name as room_name')
             ->selectSub(function ($query) {
-                // Subconsulta para obtener la cantidad total de artículos por pedido
                 $query->selectRaw('COUNT(id)')
                     ->from('access')
                     ->whereColumn('user_id', 'users.id');
             }, 'total_date');
-        if ($request->has('name')) {
+        if ($request->has('name') && $request->input('name') != '') {
             $query->where('users.name', 'like', '%' . $request->query('name') . '%');
         }
             
-        if ($request->has('lastname')) {
+        if ($request->has('lastname')  && $request->input('lastname') != '') {
             $query->where('users.lastname', 'like', '%' . $request->query('lastname') . '%');
         } 
 
@@ -78,39 +82,13 @@ class UserController extends Controller
     }
 
     public function edit(User $user) {
-
         $departments = DB::table('departments')->get();
-        return view('users.edit', [ 'user' => $user, 'departments' => $departments]);
+        $rooms = DB::table('rooms')->get();
+        $user_room = DB::table('room_users')->where('room_users.user_id',$user->id)->first();
+        return view('users.edit', [ 'user' => $user, 'user_room' => $user_room, 'departments' => $departments, 'rooms' => $rooms]);
 
     }
 
-
-    public function showdate(Request $request, User $user) {
-        /* $userAccess = User::select('users.id', 'users.name', 'access.registered_at as date_access')
-                ->join('access', 'users.id', '=', 'access.user_id')
-                ->where('users.id', $user->id)
-                ->get(); */
-        //dd($user);
-        $query = User::query();    
-        $query->join('access', 'users.id', '=', 'access.user_id');
-        $query->select('users.id', 'users.name', 'access.registered_at as date_access');
-
-        if($request->has('first_date') && $request->has('last_date')) {
-            $query->whereBetween('access.registered_at', [$request->query('first_date'), $request->query('last_date')])->get();
-        }
-
-        /* if ($request->has('first_date')) {
-            $query->where('users.name', 'like', '%' . $request->query('name') . '%');
-        }
-            
-        if ($request->has('last_date')) {
-            $query->where('users.lastname', 'like', '%' . $request->query('lastname') . '%');
-        }  */
-        
-
-        $userAccess = $query->paginate(10);
-        return view('users.show', [ 'user' => $userAccess]);
-    }
 
     public function show(Request $request, User $user) {
         /* $userAccess = User::select('users.id', 'users.name', 'access.registered_at as date_access')
@@ -125,45 +103,48 @@ class UserController extends Controller
         if($request->has('first_date') && $request->has('last_date')) {
             $query->whereBetween('access.registered_at', [$request->query('first_date'), $request->query('last_date')])->get();
         }
-
-        /* if ($request->has('first_date')) {
-            $query->where('users.name', 'like', '%' . $request->query('name') . '%');
-        }
-            
-        if ($request->has('last_date')) {
-            $query->where('users.lastname', 'like', '%' . $request->query('lastname') . '%');
-        }  */
-        
-
         $userAccess = $query->paginate(10);
         return view('users.show', [ 'user' => $userAccess, 'id' => $user->id]);
     }
 
     public function update(SaveUserRequest $request, User $user) {
-        
-       //$user->update($request->validated());
-       //$uri = $request->path();
-
-        $user->update($request->validated());
-
-       /*  $validated = $request->validateWithBag('updatePassword', [
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
-
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
+/*         $validated_room = $request->validate([
+            'room_id' => ['required', 'numeric'],
         ]); */
+        $validated = $request->validated();
+        $userRoom = DB::table('room_users')
+            ->where('room_users.user_id', $user->id)
+            //->where('room_users.room_id', $request->room_id)
+            ->first();
+            //->get();
+        
+        $userUpdate = DB::table('users')
+            ->join('type_users', 'users.type_user_id', '=', 'type_users.id')
+            ->where('type_users.name', 'employee')
+            ->where('users.id', $user->id)
+            ->select('users.*', 'type_users.name')
+            ->first();
 
-        /* $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if($userUpdate){
+            if(!$userRoom){ 
+                DB::table('room_users')->insert([
+                    'user_id' => $user->id,
+                    'room_id' => $request->room_id,
+                ]);
+            }else if($request->room_id){
+                DB::table('room_users')
+                ->where('room_users.user_id', $user->id)
+                ->update([
+                    'room_id' => $request->room_id,
+                ]);
+            }
+            $user->update($validated);
+            return to_route('dashboard')->with('status', 'User Updata!');
+        }else {
+            back()->withErrors('User not is Employee');
         }
-
-        $request->user()->save(); */
-        //dd($request);
-        return to_route('dashboard')->with('status', 'User Updata!');
+       //$uri = $request->path();
+        //$request->user()->fill($request->validated());
     }
 
 
@@ -212,7 +193,7 @@ class UserController extends Controller
 
                 $file = request()->file('file');
 
-                $import = new UsersImport;
+                $import = new UsersImport(12);
                 $import->import($file);
                 //dd($import->errors());
                 //Excel::import(new UsersImport,request()->file('file'));
