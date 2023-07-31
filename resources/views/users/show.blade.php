@@ -9,9 +9,9 @@
         <form action="{{ route('users.show', $id) }}" method="GET">
             @csrf
             <label for="first_date" class="w-full sm:w-auto">{{ __('First Date') }}</label>
-            <input type="date" name="first_date" value="{{ request('first_date') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
+            <input type="date" name="first_date" value="{{ old('first_date',request('first_date')) }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
             <label for="last_date" class="w-full sm:w-auto">{{ __('Last date') }}</label>
-            <input type="date" name="last_date" value="{{ request('last_date') }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1"> 
+            <input type="date" name="last_date" value="{{ old('last_date',request('last_date')) }}" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1"> 
     
                 <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">{{ __('Search') }}</button>
                 <a href="{{ route('users.show',  $id) }}" class="px-4 py-2 bg-gray-500 text-white rounded-md">{{ __('Clear Fields') }}</a>
@@ -24,7 +24,8 @@
     <x-list-date for="date" :user="$user" />
     <br />
     <div class="max-w-7xl mx-auto flex justify-center">
-        {{ $user->links() }} 
+        {{-- {{ $user->links() }}  --}}
+        {{ $user->appends(request()->input())->links()}}
     </div>
     <br />
 </x-app-layout>

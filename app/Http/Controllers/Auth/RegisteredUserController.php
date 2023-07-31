@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
         //dd($type_users[0]->id);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'numeric','min_digits:3', 'max_digits:5'],
+            'code' => ['required', 'numeric','min_digits:3', 'max_digits:5','unique:'.User::class],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'type_user_id' => ['required','numeric',  Rule::in([$type_users[0]->id])],

@@ -40,7 +40,10 @@
                     <select name="department_id" id="department_id" class="w-full sm:w-auto border border-gray-300 rounded-md px-2 py-1">
                         <option value="none" selected disabled hidden>Select</option>
                         @foreach ($departments as $department)
-                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                            <option value="{{ $department->id }}"
+                                {{ old('department_id') == $department->id ? 'selected="selected"' : '' }}>
+                                {{ $department->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -120,7 +123,8 @@
         
     </div>
     <div class="max-w-7xl mx-auto flex justify-center">
-        {{ $users->links() }} 
+        {{-- {{ $users->links() }}  --}}
+        {{ $users->appends(request()->input())->links() }}
     </div>
     <br />
         

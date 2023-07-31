@@ -28,7 +28,8 @@
                 <select name="type_user_id" id="type_user_id">
                     <option value="" selected >Select</option>
                     @foreach ($type_users as $type_user)
-                        <option value="{{ $type_user->id }}">
+                        <option value="{{ $type_user->id }}"
+                            {{ old('type_user_id') == $type_user->id ? 'selected="selected"' : '' }}>
                             {{ $type_user->name }}
                         </option>
                     @endforeach
