@@ -1,3 +1,4 @@
+@props(['user'])
 @extends('layouts.user_employee')
 @section('content')
     <div class="py-5">
@@ -27,6 +28,12 @@
                     {{ __("You're logged in employee!") }}
                 </div>
             </div>
+            <x-list-date for="date" :user="$user" :employee="['user' => 0]"/>
+            <br />
+            <div class="max-w-7xl mx-auto flex justify-center">
+                {{ $user->links() }} 
+            </div>
+            <br />
         </div>
     </div>
 

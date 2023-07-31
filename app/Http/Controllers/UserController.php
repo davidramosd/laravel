@@ -28,7 +28,8 @@ class UserController extends Controller
                 ->paginate(10); */
             $validated = $request->validate([
                     'name' => 'nullable|string|max:50',
-                    'lastname' => 'nullable|string|max:50'
+                    'lastname' => 'nullable|string|max:50',
+                    'id' => 'nullable|numeric'
             ]);
             $departments = DB::table('departments')->get();
             $query = User::query();
@@ -44,6 +45,10 @@ class UserController extends Controller
                     ->from('access')
                     ->whereColumn('user_id', 'users.id');
             }, 'total_date');
+
+        if ($request->has('id') && $request->input('id') != '') {
+                $query->where('users.id', $request->input('id'));
+        }
         if ($request->has('name') && $request->input('name') != '') {
             $query->where('users.name', 'like', '%' . $request->query('name') . '%');
         }
@@ -53,7 +58,7 @@ class UserController extends Controller
         } 
 
         if ($request->has('department_id')) {
-            $query->where('users.department_id', 'like', '%' . $request->query('department_id') . '%');
+            $query->where('users.department_id', $request->query('department_id'));
         } 
 
         $users = $query->paginate(10);
@@ -100,7 +105,7 @@ class UserController extends Controller
         $query->join('access', 'users.id', '=', 'access.user_id');
         $query->select('users.id', 'users.name', 'access.registered_at as date_access');
         $query->where('users.id', $user->id);
-        if($request->has('first_date') && $request->has('last_date')) {
+        if($request->has('first_date') && $request->has('last_date') && $request->input('first_date') != '' && $request->input('last_date') != '') {
             $query->whereBetween('access.registered_at', [$request->query('first_date'), $request->query('last_date')])->get();
         }
         $userAccess = $query->paginate(10);
@@ -108,16 +113,19 @@ class UserController extends Controller
     }
 
     public function update(SaveUserRequest $request, User $user) {
-/*         $validated_room = $request->validate([
+        /*$validated_room = $request->validate([
             'room_id' => ['required', 'numeric'],
         ]); */
+        //dd($user);
+        $request->validate([
+            'room_id' => ['required', 'numeric'],
+        ]);
         $validated = $request->validated();
         $userRoom = DB::table('room_users')
             ->where('room_users.user_id', $user->id)
             //->where('room_users.room_id', $request->room_id)
             ->first();
             //->get();
-        
         $userUpdate = DB::table('users')
             ->join('type_users', 'users.type_user_id', '=', 'type_users.id')
             ->where('type_users.name', 'employee')
@@ -147,6 +155,26 @@ class UserController extends Controller
         //$request->user()->fill($request->validated());
     }
 
+    public function create() {
+        $departments = DB::table('departments')->get();
+        $rooms = DB::table('rooms')->get();
+        $type_users = DB::table('type_users')->where('type_users.name', 'employee')->get();
+        return view('users.create',[ 'user' => new User, 'user_room' => ['room_id' => ''], 'departments' => $departments, 'rooms' => $rooms, 'type_users' => $type_users]);
+    }
+    public function store(SaveUserRequest $request) {
+        $request->validate([
+            'room_id' => ['required', 'numeric'],
+        ],[
+            'room_id.required' => 'Select 1 room',
+        ]);
+        $id = User::insertGetId($request->validated());
+        DB::table('room_users')->insert([
+            'user_id' => $id,
+            'room_id' => $request->room_id,
+        ]);
+        
+        return to_route('dashboard')->with('status', 'User created!');
+    }
 
     public function destroy(User $user) {
         $user->delete();
@@ -183,17 +211,30 @@ class UserController extends Controller
         return Excel::download(new UsersExport, 'users.xlsx');
     }
        
+    public function importUsers()
+    { 
+        $rooms = DB::table('rooms')->where('rooms.name', 'ROOM_911')->get();
+        $departments = DB::table('departments')->get();
+        return view('users.users', ['rooms' => $rooms, 'departments' => $departments]);
+    }
     /**
     * @return \Illuminate\Support\Collection
     */
-    public function import() 
+    public function import(Request $request) 
     {
+        $request->validate([
+            'room_id' => ['required', 'numeric'],
+            'department_id' => ['required', 'numeric'],
+        ],);
+       /*  [
+            'department_id.required' => 'Select 1 department',
+        ] */
         try {
             if( request()->file('file')) {
 
                 $file = request()->file('file');
 
-                $import = new UsersImport(12);
+                $import = new UsersImport($request->room_id, $request->department_id, 1);
                 $import->import($file);
                 //dd($import->errors());
                 //Excel::import(new UsersImport,request()->file('file'));
@@ -212,7 +253,7 @@ class UserController extends Controller
                         ]);
                     }
                 } */
-                return back();
+                return back()->with('status', 'Users created!');;
             }
         } catch (Throwable $e) {
             //session()->flash('status', 'Problemas con el csv');

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserActiveController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 /*
@@ -25,7 +26,7 @@ Route::view('/','welcome')->name('welcome');
 Route::get('/dashboard', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('numberid')->group(function () {
-    Route::view('/employee', 'employee')->name('employee');
+    Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
     Route::post('logout_employee', [AuthenticatedSessionController::class, 'destroy'])
             ->name('logout_employee');
 });
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
     
     Route::controller(UserController::class)->group(function(){
-        Route::view('users/data','users.users')->name('users.data');
+        Route::get('users/data','importUsers')->name('users.data');
         Route::get('users-export', 'export')->name('users.export');
         Route::post('users-import', 'import')->name('users.import');
     });

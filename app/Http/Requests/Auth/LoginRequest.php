@@ -55,14 +55,14 @@ class LoginRequest extends FormRequest
         if (!$user) {
             
             RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
+            session()->flash('status', 'User no enabled');
+            /* throw ValidationException::withMessages([
                 'email' => 'Email does not have permissions',
-            ]);
+            ]); */
         }
         if ( !Auth::attempt(['email' =>$this->email, 'password' => $this->password, 'active' => 1 ], $this->boolean('remember') ))
         {
-            if ($user->id) {
+            if ($user) {
                 $users = DB::table('users')
                 ->where('users.email', $user->email ?? '')
                 ->update([
@@ -75,7 +75,6 @@ class LoginRequest extends FormRequest
             
             
             RateLimiter::hit($this->throttleKey());
-            session()->flash('status', 'User no enabled');
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);

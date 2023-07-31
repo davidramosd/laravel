@@ -35,15 +35,14 @@ class VerificationCode extends Controller
         //dd(count($users));
         
         //$user = User::where('code', $code)->first();
-        
+        $users = User::where('code', $code)->first();
 
-        if (!$user_permission) {
+        if (!$user_permission && $users) {
             DB::table('users')
             ->where('users.code',$code)
             ->update([
                 'total_access' => DB::raw('total_access + 1'),
             ]);
-            $users = User::where('code', $code)->first();
             DB::table('access')->insert([
                 'user_id' => $users->id,
             ]);
@@ -59,7 +58,8 @@ class VerificationCode extends Controller
                 'user_id' => $user_permission->id,
             ]);
             $request->session()->put('auth.verification', time());
-            return redirect()->route('employee');
+            $request->session()->put(['code' => $code]);
+            return redirect()->route('employee', ['code' => $code]);
         }else {
             session()->flash('status', 'Code not found or disabled user');
             return redirect()->route('identification');

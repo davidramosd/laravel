@@ -5,11 +5,10 @@
         </h2>
     </x-slot>
     <h1 class="my-4 font-serif text-3xl text-center text-sky-600 dark:text-sky-500">
-        Edit form
+        Create user
    </h1>
-    <form method="post" action="{{ route('users.update',  $user) }}" class="max-w-xl px-8 py-4 mx-auto bg-white rounded shadow dark:bg-slate-800">
+    <form method="post" action="{{ route('users.store') }}" class="max-w-xl px-8 py-4 mx-auto bg-white rounded shadow dark:bg-slate-800">
         @csrf
-        @method('patch')
 
         <div class="space-y-4">
             <x-text-input id="id" name="id" type="hidden" class="mt-1 block w-full" :value="$user->id"/>
@@ -37,7 +36,7 @@
                         <option value="" selected>Select</option>
                         @foreach ($rooms as $room)
                             <option value="{{ $room->id }}"
-                                {{ $user_room && $user_room->room_id == $room->id ? 'selected="selected"' : '' }}>
+                                {{ old('room_id',$user_room['room_id']) == $room->id ? 'selected="selected"' : '' }}>
                                 {{ $room->name }}
                             </option>
                         @endforeach
@@ -53,7 +52,7 @@
                         <option value="" selected>Select</option>
                         @foreach ($departments as $department)
                             <option value="{{ $department->id }}"
-                                {{ $user &&  $user->department_id == $department->id ? 'selected="selected"' : '' }}>
+                                {{ old('department_id',$user->department_id) == $department->id ? 'selected="selected"' : '' }}>
                                 {{ $department->name }}
                             </option>
                         @endforeach
@@ -61,7 +60,22 @@
                     <x-input-error class="mt-2" :messages="$errors->get('department_id')" />
                 </label>
             </div>
-
+            <div class="mb-6">
+                <label class="flex flex-col block">
+                    <span class=""> {{__('Type user')}} </span>
+                    <select name="type_user_id" id="type_user_id">
+                        <option value="" selected>Select</option>
+                        @foreach ($type_users as $type_user)
+                            <option value="{{ $type_user->id }}"
+                                {{ old('type_user_id', $user->type_user_id) == $type_user->id ? 'selected="selected"' : '' }}>
+                                {{ $type_user->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-input-error class="mt-2" :messages="$errors->get('department_id')" />
+                </label>
+            </div>
+            
             <x-input-label for="email" :value="__('email')" />
             <x-text-input  id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required />
             <x-input-error  class="mt-2" :messages="$errors->get('email')" />
@@ -76,5 +90,3 @@
     </form>
     <br />
 </x-app-layout>
-
-

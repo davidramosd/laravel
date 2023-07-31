@@ -1,4 +1,5 @@
 <x-guest-layout>
+    
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -25,7 +26,7 @@
             <label class="flex flex-col block">
                 <span class=""> {{__('Type user')}} </span>
                 <select name="type_user_id" id="type_user_id">
-                    <option value="none" selected disabled hidden>Select</option>
+                    <option value="" selected >Select</option>
                     @foreach ($type_users as $type_user)
                         <option value="{{ $type_user->id }}">
                             {{ $type_user->name }}

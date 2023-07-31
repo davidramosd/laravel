@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <h2 class="flex items-center text-3xl font-extrabold dark:text-white m-2">Room 911</h2>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
